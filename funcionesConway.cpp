@@ -84,12 +84,13 @@ int celulasAdyacentes(int matriz[20][80],int puntoX,int puntoY){
 
 int celulasVivas(int matriz[20][80]){
 
-	int celulas;
+	int celulas=0;
 	int fila,columna;
 
 	for(fila = 0 ; fila < 20 ; fila++){
 		for(columna = 0 ; columna < 80 ; columna++){
-			if(matriz[fila][columna] == 1){celulas++;}
+			if(matriz[fila][columna] == 1){
+				celulas++;}
 		}
 	}
 	return celulas;
@@ -138,7 +139,7 @@ int controlador(int matriz[20][80]){
 			}
 		}
 	}
-	celulas = celulasVivas(matrizAuxiliar);
+	celulas = celulasVivas(matriz);
 	return celulas;
 }
 
@@ -152,7 +153,7 @@ int organizador(){
 	cout<<"\nRESPUESTA:";
 	cin>>respuesta;
 	while(respuesta < 1 || respuesta > 3){
-		cout<<"RESPUESTA INVALIDA! Vuelva a intentar:";
+		cout<<"\nRESPUESTA INVALIDA! Vuelva a intentar:";
 		cin>>respuesta;
 	}
 	return respuesta;
@@ -168,7 +169,7 @@ void juego(){
 	celulasArranque = pedirCelulasDeArranque(matriz);
 	mostrarMatriz(matriz);
 
-	cout<<"Celulas de arranque:"<<celulasArranque;
+	cout<<"\nCelulas de arranque:"<<celulasArranque;
 
 	respuesta = organizador();
 
@@ -183,15 +184,16 @@ void juego(){
 			mostrarMatriz(matriz);
 		}
 		if(respuesta == 2){
-			cout<<"REINICIANDO JUEGO...\n";
+			cout<<"\nREINICIANDO JUEGO...\n";
 			generarMatriz(matriz);
-			pedirCelulasDeArranque(matriz);
+			celulasArranque=pedirCelulasDeArranque(matriz);
+			cout<<"\nCelulas de arranque:"<<celulasArranque;
 			mostrarMatriz(matriz);
 			respuesta = organizador();
 		}
 	respuesta = organizador();
 	}
-	cout<<"\nJUEGO FINALIZADO";
+	cout<<"\nJUEGO FINALIZADO\n";
 }
 
 int main(){
