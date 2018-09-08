@@ -6,7 +6,6 @@ using namespace std;
 void generarMatriz(int matriz[20][80]){
 
 	int fila,columna;
-
 	for(fila=0;fila<20;fila++){
 		for(columna=0;columna<80;columna++){
 			matriz[fila][columna] = 0;
@@ -17,7 +16,6 @@ void generarMatriz(int matriz[20][80]){
 int verificadorPosicion(int x, int y){
 
 	int posicionCorregida;
-
 	while(x > 20 || y > 80){
 		if(x > 20){
 			cout<<"ERROR! La coordenada x debe ser menor o igual a 20:";
@@ -37,7 +35,7 @@ int pedirCelulasDeArranque(int matriz[20][80]){
 
 	int coordenadaX,coordenadaY;
 	char seguir='S';
-	int celulas;
+	int celulas=0;
 
 	while(seguir=='S' || seguir=='s'){
 		cout<<"Ingrese la coordenada en x:";
@@ -50,9 +48,8 @@ int pedirCelulasDeArranque(int matriz[20][80]){
 		}
 		celulas++;
 		matriz[coordenadaX-1][coordenadaY-1] = 1;
-
 		if(celulas > 1600){
-			cout<<"Hey! Son muchas celulas! Se jugara con las que ya hay ingresadas.";
+			cout<<"Son muchas celulas! Se jugara con las que ya hay ingresadas.";
 			seguir = 'N';
 		}
 		else{
@@ -82,11 +79,10 @@ int celulasAdyacentes(int matriz[20][80],int puntoX,int puntoY){
 	return celulas;
 }
 
-int celulasVivas(int matriz[20][80]){
+int contadorCelulasVivas(int matriz[20][80]){
 
 	int celulas=0;
 	int fila,columna;
-
 	for(fila = 0 ; fila < 20 ; fila++){
 		for(columna = 0 ; columna < 80 ; columna++){
 			if(matriz[fila][columna] == 1){
@@ -106,47 +102,97 @@ void mostrarMatriz(int matriz[20][80]){
 	}
 }
 
-int controlador(int matriz[20][80]){
+void juegoCongelado(int matriz[20][80],int matrizAuxiliar[20][80]){
 
-	int celulas;
 	int fila,columna;
-	int matrizAuxiliar[20][80];//LA MATRIZ AUXILIAR SOLO VIVE EN ESTA FUNCION.
-
-	for(fila=0;fila<20;fila++){//copio la matriz original en otra auxiliar asi no se modifica sobre la marcha.
-		for(columna=0;columna<80;columna++){
-			matrizAuxiliar[fila][columna]=matriz[fila][columna];
-		}
-	}
+	int casilleros=0;
 	for(fila=0;fila<20;fila++){
-			for(columna=0;columna<80;columna++){
-				if(matrizAuxiliar[fila][columna]==1){//CELULA VIVA.
-					celulas = celulasAdyacentes(matrizAuxiliar,fila,columna);
-					if(celulas < 2 || celulas > 3){
-						matriz[fila][columna]=0;
-					}
-					else{
-						matriz[fila][columna]=1;
-					}
-				}
-				else{//CELULA MUERTA.
-					celulas = celulasAdyacentes(matrizAuxiliar,fila,columna);
-					if(celulas != 3){
-						matriz[fila][columna]=0;
-					}
-					else{
-						matriz[fila][columna]=1;
-				}
+		for(columna=0;columna<80;columna++){
+			if(matriz[fila][columna]==matrizAuxiliar[fila][columna]){
+				casilleros++;
 			}
 		}
 	}
-	celulas = celulasVivas(matriz);
-	return celulas;
+	if(casilleros == 1600){
+		cout<<"\nEl tablero no sufrio cambios!";
+	}
 }
 
-int organizador(){
+int estadoCelulas(int celulasActuales,int celulasAnteriores){
+
+	int total=0;
+	total = (celulasActuales-celulasAnteriores);
+	if(total > 0){
+		cout<<"\nNacieron "<<total<<" celulas";
+	}
+	if(total < 0){
+		cout<<"\nMuerieron "<<total<<" celulas";
+	}
+	return total;
+}
+
+void celulaViva(int matrizAuxiliar[20][80],int matriz[20][80],int fila,int columna){
+
+	int celulas;
+	celulas = celulasAdyacentes(matrizAuxiliar,fila,columna);
+	if(celulas < 2 || celulas > 3){
+		matriz[fila][columna]=0;
+	}
+	else{
+		matriz[fila][columna]=1;
+	}
+}
+
+void celulaMuerta(int matrizAuxiliar[20][80],int matriz[20][80],int fila,int columna){
+
+	int celulas;
+	celulas = celulasAdyacentes(matrizAuxiliar,fila,columna);
+	if(celulas != 3){
+		matriz[fila][columna]=0;
+	}
+	else{
+		matriz[fila][columna]=1;
+	}
+}
+
+int actualizarMatriz(int matrizAuxiliar[20][80],int matriz[20][80]){
+
+	int celulasNacidas=0;
+	for(int fila=0;fila<20;fila++){
+		for(int columna=0;columna<80;columna++){
+			if(matrizAuxiliar[fila][columna]==1){//CELULA VIVA
+				celulasNacidas++;
+				celulaViva(matrizAuxiliar,matriz,fila,columna);
+			}
+			else{//CELULA MUERTA.
+				celulaMuerta(matrizAuxiliar,matriz,fila,columna);
+			}
+		}
+	}
+	return celulasNacidas;
+}
+
+int controlador(int matriz[20][80]){
+
+	int celulasNacidas=0;
+	int celulasAuxiliar;
+	int matrizAuxiliar[20][80];//LA MATRIZ AUXILIAR SOLO VIVE EN ESTA FUNCION.
+
+	for(int fila=0;fila<20;fila++){//Copio la matriz original en otra auxiliar asi no se modifica en la ejecucion.
+		for(int columna=0;columna<80;columna++){
+			matrizAuxiliar[fila][columna]=matriz[fila][columna];
+		}
+	}
+	celulasNacidas=actualizarMatriz(matrizAuxiliar,matriz);//CELULAS NACIDAS EN EL ULTIMO TURNO
+	celulasAuxiliar = contadorCelulasVivas(matriz);//CELULAS NACIDAS EN EL TURNO ANTERIOR
+	juegoCongelado(matriz,matrizAuxiliar);
+	estadoCelulas(celulasAuxiliar,celulasNacidas);
+	return celulasAuxiliar;
+}
+
+int peticionUsuario(){
 
 	int respuesta;
-
 	cout<<"\n[1] SEGUIR CON LA EVOLUCION";
 	cout<<"\n[2] REINICIAR EL JUEGO";
 	cout<<"\n[3] TERMINAR";
@@ -159,39 +205,40 @@ int organizador(){
 	return respuesta;
 }
 
+void respuesta1(int matriz[20][80]){
+
+	int celulas;
+	for(int i=0; i<=10; i++){//PARA QUE SEA MAS FLUIDA LA CORRECCION.
+		cout<<"\n---------------------------------------------------";
+		celulas=controlador(matriz);
+		cout<<"\nCantidad de celulas con vida:"<<celulas;
+		mostrarMatriz(matriz);
+	}
+}
+
+void respuesta2(int matriz[20][80]){
+
+	int celulasArranque;
+
+	cout<<"COMENZANDO UN NUEVO JUEGO...\n";
+	generarMatriz(matriz);
+	celulasArranque=pedirCelulasDeArranque(matriz);
+	cout<<"\nCelulas de arranque:"<<celulasArranque;
+	mostrarMatriz(matriz);
+}
+
 void juego(){
 
 	int matriz[20][80];
-	int respuesta;
-	int celulasArranque,celulas;
-
-	generarMatriz(matriz);
-	celulasArranque = pedirCelulasDeArranque(matriz);
-	mostrarMatriz(matriz);
-
-	cout<<"\nCelulas de arranque:"<<celulasArranque;
-
-	respuesta = organizador();
-
+	int respuesta=2;
 	while(respuesta != 3){
 		if(respuesta ==  1){
-			cout<<"-------------------------------------------------------------------------";
-			celulas=controlador(matriz);
-			cout<<"\nCantidad de celulas con vida:"<<celulas;
-			//PROMEDIO DE NACIMIENTOS
-			//PROMEDIO DE MUERTES
-			//SI NO HUBO CAMBIO EN LOS ULTIMOS DOS TURNOS
-			mostrarMatriz(matriz);
+			respuesta1(matriz);
 		}
 		if(respuesta == 2){
-			cout<<"\nREINICIANDO JUEGO...\n";
-			generarMatriz(matriz);
-			celulasArranque=pedirCelulasDeArranque(matriz);
-			cout<<"\nCelulas de arranque:"<<celulasArranque;
-			mostrarMatriz(matriz);
-			respuesta = organizador();
+			respuesta2(matriz);
 		}
-	respuesta = organizador();
+	respuesta = peticionUsuario();
 	}
 	cout<<"\nJUEGO FINALIZADO\n";
 }
